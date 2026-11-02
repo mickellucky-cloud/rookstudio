@@ -10,6 +10,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { ExportModal } from "@/components/ExportModal";
 import { NvidiaModel, MotionStyle, ShotDirection } from "@/types";
 import { AVAILABLE_MODELS } from "@/lib/nvidia";
+import { Film, LayoutGrid, Terminal } from "lucide-react";
 
 export default function RookStudioHome() {
   const [model, setModel] = useState<NvidiaModel>("deepseek-ai/deepseek-r1");
@@ -17,6 +18,7 @@ export default function RookStudioHome() {
   const [apiKey, setApiKey] = useState<string>("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [bottomDockTab, setBottomDockTab] = useState<"timeline" | "storyboard">("timeline");
 
   // Project state
   const [topic, setTopic] = useState("The Secret Monopoly of Luxottica");
@@ -112,7 +114,6 @@ export default function RookStudioHome() {
       const data = await res.json();
 
       if (data.fallback) {
-        // Fallback with warning
         setHook(data.fallback.hook || hook);
         setFullScript(data.fallback.fullScript || fullScript);
         setThinkingTrace(data.fallback.thinking || thinkingTrace);
@@ -133,8 +134,8 @@ export default function RookStudioHome() {
   const currentModelMeta = AVAILABLE_MODELS.find((m) => m.id === model);
 
   return (
-    <div className="min-h-screen bg-[#050608] flex flex-col font-sans">
-      {/* Studio Header */}
+    <div className="min-h-screen bg-[#07080b] flex flex-col text-zinc-100">
+      {/* Studio Top Navigation */}
       <Header
         model={model}
         setModel={setModel}
@@ -146,53 +147,90 @@ export default function RookStudioHome() {
         isGenerating={isGenerating}
       />
 
-      {/* Main Studio Workspace */}
-      <main className="flex-1 p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1720px] w-full mx-auto">
-        {/* Left Column: Scriptwriter & Reasoning Director */}
-        <section className="lg:col-span-5 h-[calc(100vh-6.5rem)]">
-          <ScriptDirector
-            topic={topic}
-            setTopic={setTopic}
-            hook={hook}
-            thinkingTrace={thinkingTrace}
-            fullScript={fullScript}
-            setFullScript={setFullScript}
-            onGenerate={handleGenerate}
-            isGenerating={isGenerating}
-            modelName={currentModelMeta?.name || "DeepSeek-R1"}
-          />
-        </section>
+      {/* Main Studio Console */}
+      <main className="flex-1 p-4 md:p-6 max-w-[1780px] w-full mx-auto space-y-4">
+        {/* Upper Workspace: Side-by-Side Creative Director & Cinema Viewport */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Left Column: Narrative & Retention Director */}
+          <section className="lg:col-span-5 h-[580px] flex flex-col">
+            <ScriptDirector
+              topic={topic}
+              setTopic={setTopic}
+              hook={hook}
+              thinkingTrace={thinkingTrace}
+              fullScript={fullScript}
+              setFullScript={setFullScript}
+              onGenerate={handleGenerate}
+              isGenerating={isGenerating}
+              modelName={currentModelMeta?.name || "DeepSeek-R1"}
+            />
+          </section>
 
-        {/* Right Column: Player, Timeline, & Storyboard */}
-        <section className="lg:col-span-7 h-[calc(100vh-6.5rem)] flex flex-col gap-4 overflow-y-auto pr-1">
-          {/* Top: 16:9 Remotion Video Canvas */}
-          <div className="h-[430px] shrink-0">
+          {/* Right Column: Hero Cinema Monitor */}
+          <section className="lg:col-span-7 h-[580px] flex flex-col">
             <VideoCanvas
               shots={shots}
               topic={topic}
               activeShotIndex={activeShotIndex}
               onSelectShot={setActiveShotIndex}
             />
+          </section>
+        </div>
+
+        {/* Lower Workspace: Docked Production Suite (Timeline & Storyboard) */}
+        <div className="bg-[#090a0f] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl">
+          {/* Dock Navigation Tabs */}
+          <div className="h-10 px-4 bg-[#0c0d13] border-b border-white/[0.07] flex items-center justify-between select-none">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setBottomDockTab("timeline")}
+                className={`px-3 py-1 text-xs font-mono uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
+                  bottomDockTab === "timeline"
+                    ? "bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30"
+                    : "text-zinc-400 hover:text-zinc-200 border border-transparent"
+                }`}
+              >
+                <Film className="w-3.5 h-3.5 text-amber-400" />
+                <span>NLE Sequence Timeline</span>
+              </button>
+
+              <button
+                onClick={() => setBottomDockTab("storyboard")}
+                className={`px-3 py-1 text-xs font-mono uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
+                  bottomDockTab === "storyboard"
+                    ? "bg-cyan-500/15 text-cyan-300 font-bold border border-cyan-500/30"
+                    : "text-zinc-400 hover:text-zinc-200 border border-transparent"
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Storyboard & Visuals ({shots.length})</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-500">
+              <span>ACTIVE MODEL: {currentModelMeta?.name}</span>
+              <span>•</span>
+              <span>ENGINE: REMOTION 4.0</span>
+            </div>
           </div>
 
-          {/* Middle: Multi-track Timeline */}
-          <div className="shrink-0">
-            <TimelineTracks
-              shots={shots}
-              activeShotIndex={activeShotIndex}
-              onSelectShot={(idx) => setActiveShotIndex(idx)}
-            />
+          {/* Dock Panel Body */}
+          <div className="p-4">
+            {bottomDockTab === "timeline" ? (
+              <TimelineTracks
+                shots={shots}
+                activeShotIndex={activeShotIndex}
+                onSelectShot={(idx) => setActiveShotIndex(idx)}
+              />
+            ) : (
+              <ShotCards
+                shots={shots}
+                activeShotIndex={activeShotIndex}
+                onSelectShot={(idx) => setActiveShotIndex(idx)}
+              />
+            )}
           </div>
-
-          {/* Bottom: Storyboard Shots Breakdown */}
-          <div className="flex-1 min-h-[300px]">
-            <ShotCards
-              shots={shots}
-              activeShotIndex={activeShotIndex}
-              onSelectShot={(idx) => setActiveShotIndex(idx)}
-            />
-          </div>
-        </section>
+        </div>
       </main>
 
       {/* Modals */}
@@ -213,4 +251,3 @@ export default function RookStudioHome() {
     </div>
   );
 }
-
