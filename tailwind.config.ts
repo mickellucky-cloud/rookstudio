@@ -10,10 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#050608",
+        background: "#07080b",
         card: "#0c0d12",
         "card-elevated": "#13151c",
-        panel: "#090a0f",
+        panel: "#0a0b10",
         border: "rgba(255, 255, 255, 0.08)",
         "border-light": "rgba(255, 255, 255, 0.14)",
         "border-focus": "rgba(245, 158, 11, 0.5)",
@@ -31,25 +31,14 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "Inter", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "Space Mono", "monospace"],
-        heading: ["Space Grotesk", "Archivo", "sans-serif"],
-        serif: ["Playfair Display", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
+        heading: ["var(--font-grotesk)", "sans-serif"],
       },
       boxShadow: {
-        glow: "0 0 25px -5px rgba(245, 158, 11, 0.15)",
-        "glow-cyan": "0 0 25px -5px rgba(6, 182, 212, 0.15)",
+        glow: "0 0 24px -6px rgba(245, 158, 11, 0.22)",
+        "glow-cyan": "0 0 24px -6px rgba(6, 182, 212, 0.22)",
         "card-depth": "0 20px 40px -15px rgba(0, 0, 0, 0.7)",
-      },
-      animation: {
-        "pulse-subtle": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "shimmer": "shimmer 2.5s infinite linear",
-      },
-      keyframes: {
-        shimmer: {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(100%)" },
-        },
       },
     },
   },

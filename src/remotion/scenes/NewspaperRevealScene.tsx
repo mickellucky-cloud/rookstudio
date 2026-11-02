@@ -5,6 +5,9 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { EffectPresetId, MotionStyle } from "@/types";
+import { STYLE_THEMES } from "@/lib/effectsLibrary";
+import { EffectLayer } from "../EffectLayer";
 
 export interface NewspaperProps {
   publication?: string;
@@ -13,115 +16,122 @@ export interface NewspaperProps {
   highlightedText?: string;
   subSnippet?: string;
   stampText?: string;
+  style?: MotionStyle;
+  effectPreset?: EffectPresetId;
 }
 
 export const NewspaperRevealScene: React.FC<NewspaperProps> = ({
-  publication = "THE FINANCIAL TIMES",
-  date = "THURSDAY, OCTOBER 14, 1999",
+  publication,
+  date = "INVESTIGATIVE DISPATCH · ARCHIVE",
   mainHeadline = "SECRET AGREEMENT EXPOSES 80% EYEWEAR MONOPOLY",
   highlightedText = "controls retail pricing across all major department chains worldwide",
   subSnippet = "Internal memos confirm rival manufacturers were forced into exclusivity contracts or faced complete retail blackouts.",
-  stampText = "CONFIDENTIAL",
+  stampText,
+  style = "magnates",
+  effectPreset = "spotlight-sweep",
 }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
+  const theme = STYLE_THEMES[style] || STYLE_THEMES.magnates;
 
-  // Dynamic Camera tilt and push-in
-  const cameraScale = interpolate(frame, [0, 150], [1.0, 1.25], {
+  const resolvedPublication =
+    publication ||
+    (style === "fern"
+      ? "GLOBAL TELEMETRY AUDIT"
+      : style === "vox"
+      ? "THE EXPLAINER REVIEW"
+      : "THE FINANCIAL CHRONICLE");
+
+  const resolvedStamp =
+    stampText ||
+    (style === "fern"
+      ? "VERIFIED DATA"
+      : style === "vox"
+      ? "KEY EVIDENCE"
+      : "CONFIDENTIAL");
+
+  const cameraScale = interpolate(frame, [0, 150], [1.0, 1.22], {
     extrapolateRight: "clamp",
   });
-  const cameraRotate = interpolate(frame, [0, 150], [-2.5, 1.2], {
+  const cameraRotate = interpolate(frame, [0, 150], [-2.2, 1.0], {
     extrapolateRight: "clamp",
   });
-  const cameraY = interpolate(frame, [0, 150], [0, -30], {
+  const cameraY = interpolate(frame, [0, 150], [0, -24], {
     extrapolateRight: "clamp",
   });
 
-  // Highlighter sweep starting at frame 35
-  const highlightWidth = interpolate(frame, [35, 75], [0, 100], {
+  const highlightWidth = interpolate(frame, [20, 62], [0, 100], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // Red stamp slam down at frame 50
   const stampSpring = spring({
-    frame: frame - 50,
+    frame: frame - 42,
     fps,
     config: { damping: 10, mass: 0.5, stiffness: 220 },
   });
+
+  const isDarkSheet = style === "fern";
+  const sheetBg = isDarkSheet ? "#091526" : theme.palette.paperBg;
+  const sheetText = isDarkSheet ? "#f1f5f9" : "#18181b";
+  const sheetMuted = isDarkSheet ? "#94a3b8" : "#52525b";
+  const highlightColor =
+    style === "fern"
+      ? "rgba(6, 182, 212, 0.38)"
+      : style === "vox"
+      ? "rgba(212, 255, 0, 0.88)"
+      : "rgba(250, 204, 21, 0.78)";
 
   return (
     <div
       style={{
         width,
         height,
-        backgroundColor: "#07080b",
+        backgroundColor: theme.palette.canvas,
         position: "relative",
         overflow: "hidden",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        fontFamily: "'Playfair Display', Georgia, serif",
+        fontFamily:
+          style === "fern"
+            ? theme.typography.headingFont
+            : "'Georgia', serif",
       }}
     >
-      {/* Dark Studio Background with warm amber spotlight */}
+      {/* Studio Backdrop */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(circle at 50% 50%, rgba(217, 119, 6, 0.22) 0%, rgba(7, 8, 11, 0.98) 75%)",
+          background: `radial-gradient(circle at 50% 50%, ${theme.palette.primaryAccent}28 0%, ${theme.palette.canvas} 75%)`,
           zIndex: 1,
         }}
       />
 
-      {/* Floating Newspaper Canvas with 3D Parallax */}
+      {/* Document / Broadsheet Canvas */}
       <div
         style={{
           transform: `scale(${cameraScale}) rotate(${cameraRotate}deg) translateY(${cameraY}px)`,
           width: "920px",
-          backgroundColor: "#ebe4d5",
-          color: "#18181b",
-          boxShadow:
-            "0 30px 80px -15px rgba(0, 0, 0, 0.95), 0 0 40px rgba(245, 158, 11, 0.15)",
+          backgroundColor: sheetBg,
+          color: sheetText,
+          boxShadow: "0 30px 80px -15px rgba(0, 0, 0, 0.95)",
           padding: "36px 48px",
           position: "relative",
-          zIndex: 4,
-          borderRadius: "2px",
-          border: "1px solid rgba(0,0,0,0.25)",
+          zIndex: 5,
+          borderRadius: isDarkSheet ? "14px" : "4px",
+          border: isDarkSheet
+            ? `1px solid ${theme.palette.primaryAccent}55`
+            : "1px solid rgba(0,0,0,0.25)",
         }}
       >
-        {/* Paper aging texture lines */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 6px)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Vintage Tape at top left */}
-        <div
-          style={{
-            position: "absolute",
-            top: "-15px",
-            left: "40px",
-            width: "110px",
-            height: "32px",
-            backgroundColor: "rgba(255, 255, 230, 0.65)",
-            backdropFilter: "blur(2px)",
-            transform: "rotate(-6deg)",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            border: "1px dashed rgba(0,0,0,0.1)",
-          }}
-        />
-
         {/* Masthead Header */}
         <div
           style={{
-            borderBottom: "3px double #18181b",
+            borderBottom: `3px double ${
+              isDarkSheet ? theme.palette.primaryAccent : "#18181b"
+            }`,
             paddingBottom: "12px",
             marginBottom: "16px",
             textAlign: "center",
@@ -132,35 +142,35 @@ export const NewspaperRevealScene: React.FC<NewspaperProps> = ({
               display: "flex",
               justifyContent: "space-between",
               fontSize: "11px",
-              fontFamily: "'Space Grotesk', sans-serif",
-              letterSpacing: "1px",
+              fontFamily: "monospace",
+              letterSpacing: "1.5px",
               fontWeight: 700,
               textTransform: "uppercase",
-              color: "#52525b",
+              color: sheetMuted,
               marginBottom: "8px",
             }}
           >
-            <span>VOL. CXXIV NO. 42</span>
+            <span>DOSSIER NO. 402</span>
             <span>{date}</span>
-            <span>PRICE: $1.25</span>
+            <span>@BYROOK_TV</span>
           </div>
 
           <h1
             style={{
-              fontSize: "52px",
+              fontSize: "48px",
               fontWeight: 900,
-              letterSpacing: "3px",
+              letterSpacing: "2.5px",
               textTransform: "uppercase",
               margin: 0,
               lineHeight: 1.05,
-              color: "#0a0a0c",
+              color: sheetText,
             }}
           >
-            {publication}
+            {resolvedPublication}
           </h1>
         </div>
 
-        {/* Headline */}
+        {/* Main Headline */}
         <h2
           style={{
             fontSize: "30px",
@@ -168,14 +178,13 @@ export const NewspaperRevealScene: React.FC<NewspaperProps> = ({
             lineHeight: 1.18,
             margin: "0 0 18px 0",
             textTransform: "uppercase",
-            letterSpacing: "-0.5px",
-            color: "#0f172a",
+            color: sheetText,
           }}
         >
           {mainHeadline}
         </h2>
 
-        {/* Article Body with Animated Highlighter */}
+        {/* Body & Animated Highlighter */}
         <div
           style={{
             display: "grid",
@@ -183,31 +192,18 @@ export const NewspaperRevealScene: React.FC<NewspaperProps> = ({
             gap: "24px",
             fontSize: "16px",
             lineHeight: 1.5,
-            color: "#27272a",
+            color: sheetText,
           }}
         >
           <div>
-            <p style={{ margin: "0 0 12px 0", textAlign: "justify" }}>
-              <span
-                style={{
-                  fontSize: "34px",
-                  float: "left",
-                  lineHeight: "28px",
-                  paddingRight: "8px",
-                  paddingTop: "4px",
-                  fontWeight: 900,
-                }}
-              >
-                T
-              </span>
-              he unsealed European antitrust documents reveal that the pricing
-              cartel{" "}
+            <p style={{ margin: "0 0 12px 0" }}>
+              Unsealed regulatory disclosures confirm that the dominant network{" "}
               <span
                 style={{
                   position: "relative",
                   display: "inline-block",
-                  fontWeight: 700,
-                  color: "#000000",
+                  fontWeight: 800,
+                  color: isDarkSheet ? "#ffffff" : "#000000",
                 }}
               >
                 <span
@@ -217,96 +213,116 @@ export const NewspaperRevealScene: React.FC<NewspaperProps> = ({
                     bottom: "2px",
                     left: 0,
                     width: `${highlightWidth}%`,
-                    backgroundColor: "rgba(250, 204, 21, 0.75)",
+                    backgroundColor: highlightColor,
                     zIndex: -1,
-                    borderRadius: "2px",
-                    boxShadow: "0 0 12px rgba(250, 204, 21, 0.4)",
+                    borderRadius: "3px",
                   }}
                 />
                 {highlightedText}
               </span>
-              , leaving consumers with no competitive pricing alternative.
+              , leaving independent challengers locked out of primary channels.
             </p>
-            <p style={{ margin: 0, fontSize: "14px", color: "#52525b" }}>
+            <p style={{ margin: 0, fontSize: "14px", color: sheetMuted }}>
               {subSnippet}
             </p>
           </div>
 
-          {/* Archival Graphic Box */}
+          {/* Evidence Exhibit Box */}
           <div
             style={{
-              border: "1px solid #71717a",
-              padding: "12px",
-              backgroundColor: "#ded6c3",
+              border: `1px solid ${
+                isDarkSheet ? theme.palette.primaryAccent : "#71717a"
+              }`,
+              padding: "14px",
+              backgroundColor: isDarkSheet
+                ? "rgba(6, 182, 212, 0.08)"
+                : "rgba(0,0,0,0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
               textAlign: "center",
+              borderRadius: "6px",
             }}
           >
             <div
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: "monospace",
                 fontSize: "10px",
                 letterSpacing: "2px",
                 fontWeight: 700,
-                color: "#71717a",
+                color: sheetMuted,
                 marginBottom: "6px",
               }}
             >
-              FIG 1.1 • MARKET POWER RATIO
+              EXHIBIT A · CONCENTRATION
             </div>
             <div
               style={{
                 fontSize: "38px",
                 fontWeight: 900,
-                color: "#991b1b",
+                color:
+                  style === "fern"
+                    ? "#d4ff00"
+                    : style === "vox"
+                    ? "#2563eb"
+                    : "#991b1b",
                 lineHeight: 1,
               }}
             >
-              82.4%
+              84.2%
             </div>
-            <div style={{ fontSize: "12px", color: "#475569", marginTop: "4px" }}>
-              Single Entity Supply
+            <div style={{ fontSize: "12px", color: sheetMuted, marginTop: "6px" }}>
+              Consolidated Control
             </div>
           </div>
         </div>
 
-        {/* Slammed Red Stamp */}
-        {frame > 50 && (
+        {/* Slammed Stamp */}
+        {frame > 42 && (
           <div
             style={{
               position: "absolute",
-              top: "35%",
-              right: "60px",
-              transform: `scale(${stampSpring}) rotate(-14deg)`,
-              border: "4px solid #b91c1c",
-              padding: "8px 24px",
-              color: "#b91c1c",
-              fontSize: "32px",
+              top: "36%",
+              right: "56px",
+              transform: `scale(${stampSpring}) rotate(-12deg)`,
+              border: `4px solid ${
+                style === "fern"
+                  ? "#06b6d4"
+                  : style === "vox"
+                  ? "#18181b"
+                  : "#b91c1c"
+              }`,
+              padding: "8px 22px",
+              color:
+                style === "fern"
+                  ? "#06b6d4"
+                  : style === "vox"
+                  ? "#09090b"
+                  : "#b91c1c",
+              fontSize: "28px",
               fontWeight: 900,
-              letterSpacing: "6px",
+              letterSpacing: "5px",
               textTransform: "uppercase",
               borderRadius: "6px",
-              backgroundColor: "rgba(254, 242, 242, 0.5)",
-              boxShadow: "0 0 25px rgba(185, 28, 28, 0.3)",
+              backgroundColor:
+                style === "vox"
+                  ? "#d4ff00"
+                  : isDarkSheet
+                  ? "rgba(9, 21, 38, 0.9)"
+                  : "rgba(254, 242, 242, 0.7)",
             }}
           >
-            {stampText}
+            {resolvedStamp}
           </div>
         )}
       </div>
 
-      {/* Cinematic Vignette */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          boxShadow: "inset 0 0 100px rgba(0, 0, 0, 0.9)",
-          pointerEvents: "none",
-          zIndex: 8,
-        }}
+      {/* Procedural Theme & Shot Effect Overlay */}
+      <EffectLayer
+        style={style}
+        effectPreset={effectPreset}
+        shotTitle={mainHeadline}
       />
     </div>
   );

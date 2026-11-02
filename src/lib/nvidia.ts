@@ -1,8 +1,17 @@
 import { NvidiaModel, MotionStyle } from "@/types";
+import {
+  STYLE_THEMES,
+  buildModelEffectsCatalogPrompt,
+} from "@/lib/effectsLibrary";
 
 export const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 
-export const AVAILABLE_MODELS: { id: NvidiaModel; name: string; tag: string; desc: string }[] = [
+export const AVAILABLE_MODELS: {
+  id: NvidiaModel;
+  name: string;
+  tag: string;
+  desc: string;
+}[] = [
   {
     id: "deepseek-ai/deepseek-r1",
     name: "DeepSeek-R1",
@@ -19,7 +28,7 @@ export const AVAILABLE_MODELS: { id: NvidiaModel; name: string; tag: string; des
     id: "qwen/qwen2.5-coder-32b-instruct",
     name: "Qwen 2.5 Coder 32B",
     tag: "Remotion & Motion Code",
-    desc: "Specialized in generating custom React/Remotion animation components and SVG graphics.",
+    desc: "Specialized in generating custom React/Remotion animation parameters and telemetry graphics.",
   },
   {
     id: "nvidia/llama-3.1-nemotron-70b-instruct",
@@ -30,52 +39,48 @@ export const AVAILABLE_MODELS: { id: NvidiaModel; name: string; tag: string; des
 ];
 
 export function getSystemPrompt(style: MotionStyle, topic: string) {
-  if (style === "magnates") {
-    return `You are the Lead Creative Director & Investigative Scriptwriter for @byrook_tv, specializing in high-budget, noir-style business & true-crime documentaries in the exact style of MagnatesMedia.
+  const theme = STYLE_THEMES[style] || STYLE_THEMES.magnates;
+  const catalogBlock = buildModelEffectsCatalogPrompt(style);
 
-Your task is to take the user's topic: "${topic}" and build a high-retention documentary structure:
-1. THE 15-SECOND COLD OPEN HOOK: Start in media res with a shocking contradiction or paradox. Never say "Welcome to the video". Hook the viewer with high stakes.
-2. NARRATIVE ESCALATION: Frame the journey as a gripping narrative arc (Ambition -> Secret Power Play -> The Cracks in the Empire -> Climax).
-3. SOUND DESIGN & ATMOSPHERE: Explicitly include [SFX: ...] cues (e.g. [SFX: Heavy typewriter slam], [SFX: Sub bass drone], [SFX: Vintage paper rustle]).
-4. SHOT-BY-SHOT BREAKDOWN: For each key voiceover segment, assign one of these 4 visual scene types:
-   - "parallax" (2.5D character photo cutout with floating dust and noir amber spotlight)
-   - "newspaper" (Archival newspaper clipping with animated yellow highlighter and red confidential stamp)
-   - "kinetic-stat" (Fern-style animated percentage counter and minimalist financial curve)
-   - "conspiracy-board" (Noir corkboard with evidence cards and red string connections)
+  return `You are the Lead Documentary Director, Visual Motion Architect, and Investigative Scriptwriter for @byrook_tv, crafting high-retention YouTube documentaries in the "${theme.name}" (${theme.inspiration}) aesthetic.
 
-Output a JSON object with this exact structure:
+Your task is to take the user's video idea: "${topic}" and architect a complete, high-retention documentary package using our Theme & Visual Effects Library:
+
+${catalogBlock}
+
+DIRECTOR RULES:
+1. THE 15-SECOND COLD OPEN HOOK: Start in media res with a sharp paradox, hidden truth, or staggering number. Never say "Welcome back".
+2. NARRATIVE ESCALATION: Build a 3-act investigative script with explicit timestamps and [SFX: ...] sound design cues.
+3. INTELLIGENT SCENE & EFFECT SELECTION: Create 4 to 5 shots. For EACH shot, deliberately select:
+   - "sceneType": one of "parallax" | "newspaper" | "kinetic-stat" | "conspiracy-board" | "map"
+   - "effectPreset": one of "dust-vignette" | "spotlight-sweep" | "film-grain-35mm" | "red-string-pulse" | "crt-telemetry" | "radar-sweep" | "thermal-blueprint" | "microfiche-grid" | "halftone-editorial" | "highlighter-beam" | "anamorphic-flare" | "chromatic-glitch"
+   - "duration": integer seconds between 3 and 8 (e.g. 4)
+   - "headlineText": short punchy on-screen title, entity name, or newspaper headline
+   - "statValue": numeric value if sceneType is "kinetic-stat" (e.g. "84.2" or "420")
+   - "locationCoords": city/region + coordinates if sceneType is "map" (e.g. "MILAN, ITALY · 45.4642° N, 9.1900° E")
+
+Output pure JSON with this exact schema:
 {
-  "title": "Dramatic Title",
-  "hook": "1-sentence shocking hook",
-  "thinking": "Your strategic reasoning on audience retention and story hooks",
-  "fullScript": "The complete voiceover script formatted with timestamps and [SFX: ...] cues",
+  "title": "Dramatic Documentary Title",
+  "hook": "1-sentence shocking paradox hook",
+  "thinking": "Your strategic reasoning on audience retention, theme styling, and why you chose each sceneType and effectPreset",
+  "fullScript": "Complete voiceover script formatted with timestamps and [SFX: ...] cues",
   "shots": [
     {
       "id": "shot-1",
       "timestamp": "0:00 - 0:04",
-      "title": "THE PARADOX",
+      "duration": 4,
+      "title": "THE COLD OPEN HOOK",
       "sceneType": "parallax",
-      "narration": "Exact line spoken by voiceover",
-      "visualPrompt": "Detailed visual description for the scene",
+      "effectPreset": "${theme.defaultEffects[0]}",
+      "narration": "Exact spoken voiceover line for this shot",
+      "visualPrompt": "Detailed visual direction matching ${theme.name}",
       "cameraMovement": "Slow 2.5D push-in on subject eye line",
       "sfx": "Sub bass pulse + tape hiss",
-      "headlineText": "CHARACTER OR COMPANY NAME",
-      "statValue": "optional numeric value",
-      "vintageLabel": "OPTIONAL ARCHIVAL LOCATION/YEAR"
+      "headlineText": "KEY SUBJECT OR HEADLINE",
+      "statValue": "84.2",
+      "locationCoords": "MILAN · 45.46° N, 9.19° E"
     }
   ]
 }`;
-  }
-
-  // Fern style
-  return `You are the Lead Visual Journalist and Scriptwriter for @byrook_tv, crafting economic and geopolitical animated documentaries in the exact minimalist aesthetic of Fern.
-
-Focus on:
-1. The Underlying System: Explain complex financial, technological, or historical mechanisms clearly.
-2. Data-Driven Pacing: Pair voiceover insights with exact quantitative statistics, percentage changes, and market ratios.
-3. Minimalist Motion Design: Clean grids, animated line charts, kinetic counters, and elegant map coordinates.
-4. Retention Hooks: Pique curiosity by questioning an everyday truth (e.g., "Why flying is secretly cheaper than taking the train").
-
-Output a JSON object with the exact same JSON schema containing title, hook, thinking, fullScript, and shots.`;
 }
-

@@ -5,6 +5,9 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { EffectPresetId, MotionStyle } from "@/types";
+import { STYLE_THEMES } from "@/lib/effectsLibrary";
+import { EffectLayer } from "../EffectLayer";
 
 export interface ConspiracyBoardProps {
   centerSubject?: string;
@@ -12,56 +15,65 @@ export interface ConspiracyBoardProps {
   node2?: string;
   node3?: string;
   verdictLabel?: string;
+  style?: MotionStyle;
+  effectPreset?: EffectPresetId;
 }
 
 export const ConspiracyBoardScene: React.FC<ConspiracyBoardProps> = ({
-  centerSubject = "SHELL HOLDING CO.",
-  node1 = "OVERSEAS ACCOUNTS",
-  node2 = "RETAIL CONTRACTS",
-  node3 = "ACQUIRED BRANDS",
-  verdictLabel = "THE HIDDEN WEB OF CONTROL",
+  centerSubject = "HOLDING GROUP HQ",
+  node1 = "ACQUIRED BRANDS",
+  node2 = "RETAIL NETWORKS",
+  node3 = "OFFSHORE ENTITIES",
+  verdictLabel = "Behind dozens of household brand names sat the exact same boardroom.",
+  style = "magnates",
+  effectPreset = "red-string-pulse",
 }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
+  const theme = STYLE_THEMES[style] || STYLE_THEMES.magnates;
 
-  // Smooth camera panning across the board
-  const camX = interpolate(frame, [0, 150], [40, -40]);
-  const camY = interpolate(frame, [0, 150], [20, -20]);
-  const camScale = interpolate(frame, [0, 150], [1.0, 1.15]);
+  const camX = interpolate(frame, [0, 150], [32, -32]);
+  const camY = interpolate(frame, [0, 150], [16, -16]);
+  const camScale = interpolate(frame, [0, 150], [1.0, 1.14]);
 
-  // Red string drawing progress
-  const stringProgress = interpolate(frame, [20, 60], [0, 1], {
+  const stringProgress = interpolate(frame, [14, 54], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   const stampSpring = spring({
-    frame: frame - 60,
+    frame: frame - 48,
     fps,
     config: { damping: 12, mass: 0.6, stiffness: 180 },
   });
+
+  const connectorColor =
+    style === "fern"
+      ? "#06b6d4"
+      : style === "vox"
+      ? "#d4ff00"
+      : "#ef4444";
 
   return (
     <div
       style={{
         width,
         height,
-        backgroundColor: "#08090d",
+        backgroundColor: theme.palette.canvas,
         position: "relative",
         overflow: "hidden",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        fontFamily: "'Space Grotesk', sans-serif",
+        fontFamily: theme.typography.headingFont,
       }}
     >
-      {/* Dark Ambient Lighting with red suspense glow */}
+      {/* Ambient Suspense Glow */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.12) 0%, rgba(8, 9, 13, 0.98) 75%)",
+          background: `radial-gradient(circle at 50% 50%, ${connectorColor}24 0%, ${theme.palette.canvas} 75%)`,
           zIndex: 1,
         }}
       />
@@ -72,24 +84,24 @@ export const ConspiracyBoardScene: React.FC<ConspiracyBoardProps> = ({
           position: "absolute",
           inset: 0,
           backgroundImage:
-            "radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px)",
+            "radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px)",
           backgroundSize: "28px 28px",
-          opacity: 0.6,
+          opacity: 0.65,
           zIndex: 2,
         }}
       />
 
-      {/* The Investigation Pinboard Canvas */}
+      {/* Investigation Network Canvas */}
       <div
         style={{
           transform: `scale(${camScale}) translate(${camX}px, ${camY}px)`,
           position: "relative",
-          width: "900px",
+          width: "920px",
           height: "520px",
           zIndex: 5,
         }}
       >
-        {/* SVG Red Connection Strings */}
+        {/* SVG Connection Vectors */}
         <svg
           style={{
             position: "absolute",
@@ -100,87 +112,67 @@ export const ConspiracyBoardScene: React.FC<ConspiracyBoardProps> = ({
             pointerEvents: "none",
           }}
         >
-          {/* Line 1: Center to Left Node */}
           <line
-            x1="450"
+            x1="460"
             y1="260"
-            x2={450 - (450 - 180) * stringProgress}
+            x2={460 - (460 - 180) * stringProgress}
             y2={260 - (260 - 140) * stringProgress}
-            stroke="#ef4444"
-            strokeWidth="3"
-            strokeDasharray="6 3"
+            stroke={connectorColor}
+            strokeWidth="3.5"
+            strokeDasharray="7 4"
           />
-
-          {/* Line 2: Center to Right Node */}
           <line
-            x1="450"
+            x1="460"
             y1="260"
-            x2={450 + (720 - 450) * stringProgress}
+            x2={460 + (730 - 460) * stringProgress}
             y2={260 - (260 - 160) * stringProgress}
-            stroke="#ef4444"
-            strokeWidth="3"
-            strokeDasharray="6 3"
+            stroke={connectorColor}
+            strokeWidth="3.5"
+            strokeDasharray="7 4"
           />
-
-          {/* Line 3: Center to Bottom Node */}
           <line
-            x1="450"
+            x1="460"
             y1="260"
-            x2={450 + (320 - 450) * stringProgress}
-            y2={260 + (410 - 260) * stringProgress}
-            stroke="#ef4444"
-            strokeWidth="3"
-            strokeDasharray="6 3"
+            x2={460 + (320 - 460) * stringProgress}
+            y2={260 + (415 - 260) * stringProgress}
+            stroke={connectorColor}
+            strokeWidth="3.5"
+            strokeDasharray="7 4"
           />
         </svg>
 
-        {/* Center Target Card */}
+        {/* Center Target Entity Card */}
         <div
           style={{
             position: "absolute",
             left: "340px",
             top: "180px",
-            width: "220px",
-            backgroundColor: "#161822",
-            border: "2px solid #ef4444",
-            boxShadow:
-              "0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(239, 68, 68, 0.3)",
+            width: "240px",
+            backgroundColor: theme.palette.surface,
+            border: `2px solid ${connectorColor}`,
+            boxShadow: `0 20px 50px rgba(0, 0, 0, 0.9), 0 0 32px ${connectorColor}44`,
             padding: "18px",
-            borderRadius: "8px",
+            borderRadius: style === "vox" ? "4px" : "12px",
             textAlign: "center",
             zIndex: 6,
           }}
         >
-          {/* Red pushpin */}
-          <div
-            style={{
-              position: "absolute",
-              top: "-10px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "18px",
-              height: "18px",
-              borderRadius: "50%",
-              backgroundColor: "#ef4444",
-              border: "2px solid #ffffff",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.6)",
-            }}
-          />
           <div
             style={{
               fontSize: "11px",
               letterSpacing: "2px",
-              color: "#ef4444",
-              fontWeight: 700,
+              color: connectorColor,
+              fontWeight: 800,
               textTransform: "uppercase",
               marginBottom: "6px",
+              fontFamily: "monospace",
             }}
           >
-            TARGET ENTITY
+            CONTROLLING ENTITY
           </div>
           <div
             style={{
-              fontSize: "18px",
+              fontSize: "19px",
               fontWeight: 800,
               color: "#ffffff",
               textTransform: "uppercase",
@@ -194,34 +186,36 @@ export const ConspiracyBoardScene: React.FC<ConspiracyBoardProps> = ({
         <div
           style={{
             position: "absolute",
-            left: "80px",
+            left: "75px",
             top: "80px",
-            width: "190px",
-            backgroundColor: "#0e1017",
-            border: "1px solid rgba(255, 255, 255, 0.15)",
+            width: "200px",
+            backgroundColor: theme.palette.surface,
+            border: "1px solid rgba(255, 255, 255, 0.16)",
             padding: "14px",
-            borderRadius: "6px",
-            transform: "rotate(-4deg)",
+            borderRadius: "8px",
+            transform: "rotate(-3deg)",
             boxShadow: "0 15px 35px rgba(0,0,0,0.7)",
             zIndex: 6,
           }}
         >
           <div
             style={{
-              position: "absolute",
-              top: "-8px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "14px",
-              height: "14px",
-              borderRadius: "50%",
-              backgroundColor: "#f59e0b",
+              fontSize: "10px",
+              color: theme.palette.primaryAccent,
+              fontWeight: 700,
+              fontFamily: "monospace",
             }}
-          />
-          <div style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 700 }}>
-            EVIDENCE // 01
+          >
+            SUBSIDIARY · 01
           </div>
-          <div style={{ fontSize: "14px", fontWeight: 700, color: "#f8fafc", marginTop: "4px" }}>
+          <div
+            style={{
+              fontSize: "15px",
+              fontWeight: 700,
+              color: "#f8fafc",
+              marginTop: "4px",
+            }}
+          >
             {node1}
           </div>
         </div>
@@ -230,34 +224,36 @@ export const ConspiracyBoardScene: React.FC<ConspiracyBoardProps> = ({
         <div
           style={{
             position: "absolute",
-            right: "80px",
+            right: "75px",
             top: "100px",
-            width: "190px",
-            backgroundColor: "#0e1017",
-            border: "1px solid rgba(255, 255, 255, 0.15)",
+            width: "200px",
+            backgroundColor: theme.palette.surface,
+            border: "1px solid rgba(255, 255, 255, 0.16)",
             padding: "14px",
-            borderRadius: "6px",
-            transform: "rotate(3deg)",
+            borderRadius: "8px",
+            transform: "rotate(2.5deg)",
             boxShadow: "0 15px 35px rgba(0,0,0,0.7)",
             zIndex: 6,
           }}
         >
           <div
             style={{
-              position: "absolute",
-              top: "-8px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "14px",
-              height: "14px",
-              borderRadius: "50%",
-              backgroundColor: "#06b6d4",
+              fontSize: "10px",
+              color: theme.palette.primaryAccent,
+              fontWeight: 700,
+              fontFamily: "monospace",
             }}
-          />
-          <div style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 700 }}>
-            EVIDENCE // 02
+          >
+            DISTRIBUTION · 02
           </div>
-          <div style={{ fontSize: "14px", fontWeight: 700, color: "#f8fafc", marginTop: "4px" }}>
+          <div
+            style={{
+              fontSize: "15px",
+              fontWeight: 700,
+              color: "#f8fafc",
+              marginTop: "4px",
+            }}
+          >
             {node2}
           </div>
         </div>
@@ -266,95 +262,105 @@ export const ConspiracyBoardScene: React.FC<ConspiracyBoardProps> = ({
         <div
           style={{
             position: "absolute",
-            left: "220px",
-            bottom: "40px",
-            width: "200px",
-            backgroundColor: "#0e1017",
-            border: "1px solid rgba(255, 255, 255, 0.15)",
+            left: "215px",
+            bottom: "38px",
+            width: "210px",
+            backgroundColor: theme.palette.surface,
+            border: "1px solid rgba(255, 255, 255, 0.16)",
             padding: "14px",
-            borderRadius: "6px",
-            transform: "rotate(-2deg)",
+            borderRadius: "8px",
+            transform: "rotate(-1.5deg)",
             boxShadow: "0 15px 35px rgba(0,0,0,0.7)",
             zIndex: 6,
           }}
         >
           <div
             style={{
-              position: "absolute",
-              top: "-8px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "14px",
-              height: "14px",
-              borderRadius: "50%",
-              backgroundColor: "#10b981",
+              fontSize: "10px",
+              color: theme.palette.primaryAccent,
+              fontWeight: 700,
+              fontFamily: "monospace",
             }}
-          />
-          <div style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 700 }}>
-            EVIDENCE // 03
+          >
+            HOLDINGS · 03
           </div>
-          <div style={{ fontSize: "14px", fontWeight: 700, color: "#f8fafc", marginTop: "4px" }}>
+          <div
+            style={{
+              fontSize: "15px",
+              fontWeight: 700,
+              color: "#f8fafc",
+              marginTop: "4px",
+            }}
+          >
             {node3}
           </div>
         </div>
 
-        {/* Classified Verdict Stamp */}
-        {frame > 60 && (
+        {/* Verdict Stamp */}
+        {frame > 48 && (
           <div
             style={{
               position: "absolute",
-              bottom: "40px",
-              right: "90px",
-              transform: `scale(${stampSpring}) rotate(-8deg)`,
-              border: "3px solid #ef4444",
+              bottom: "42px",
+              right: "85px",
+              transform: `scale(${stampSpring}) rotate(-7deg)`,
+              border: `3px solid ${connectorColor}`,
               padding: "8px 20px",
-              color: "#ef4444",
+              color: style === "vox" ? "#09090b" : connectorColor,
               fontSize: "18px",
               fontWeight: 900,
               letterSpacing: "4px",
               textTransform: "uppercase",
-              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              backgroundColor:
+                style === "vox" ? "#d4ff00" : `${connectorColor}1a`,
               borderRadius: "4px",
             }}
           >
-            CONFIRMED NEXUS
+            VERIFIED NEXUS
           </div>
         )}
       </div>
 
-      {/* Title Bar */}
+      {/* Lower-Third Caption */}
       <div
         style={{
           position: "absolute",
-          bottom: "36px",
+          bottom: "48px",
           textAlign: "center",
           zIndex: 10,
+          maxWidth: 880,
+          padding: "0 24px",
         }}
       >
         <div
           style={{
             fontSize: "13px",
             letterSpacing: "3px",
-            color: "#ef4444",
-            fontWeight: 700,
+            color: connectorColor,
+            fontWeight: 800,
             textTransform: "uppercase",
             marginBottom: "4px",
           }}
         >
-          INVESTIGATIVE FORENSICS
+          FORENSIC NETWORK ARCHITECTURE
         </div>
         <div
           style={{
-            fontSize: "20px",
+            fontSize: "21px",
             color: "#ffffff",
-            fontWeight: 700,
-            letterSpacing: "1px",
+            fontWeight: 600,
           }}
         >
-          {verdictLabel}
+          “{verdictLabel}”
         </div>
       </div>
+
+      {/* Procedural Theme & Shot Effect Overlay */}
+      <EffectLayer
+        style={style}
+        effectPreset={effectPreset}
+        shotTitle={centerSubject}
+      />
     </div>
   );
 };
-
